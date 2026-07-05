@@ -1,14 +1,30 @@
 #!/usr/bin/env bash
 set -e
 
-GAUSSNEWTON="../gauss-newton-refiner"
-PROBLEM=problems/5D_FBHWC0
+# Seed paths, output paths, stages, and refinement parameters are hardcoded.
+# Update them to match the runs you want to refine.
 
-wolframscript -script $GAUSSNEWTON/gauss-newton.wl \
-	--seed difflearning/replication/systems/EGB_parametric/out/run_results/Run_3_MP/stage1/logs/version_0/checkpoints/epoch=0-step=25250.json \
-	--output difflearning/replication/systems/EGB_parametric/out/run_results/Run_3_MP/stage1/logs/version_0/gauss-newton \
-	--problem $PROBLEM \
+GAUSSNEWTON="../gauss-newton-refiner"
+DIFFLEARNING="../difflearning"
+PROBLEM="refinement/5D_FBHWC0"
+LOV_SYSTEM="systems/lovelock_5d"
+
+wolframscript -script "$GAUSSNEWTON/gauss-newton.wl" \
+	--seed "neural_field/$LOV_SYSTEM/out/run_results/run_1/stage2/logs/version_0/checkpoints/best.json" \
+	--output "neural_field/$LOV_SYSTEM/out/run_results/run_1/stage2/logs/version_0/pseudo-spectral" \
+	--problem "$PROBLEM" \
 	--config.alpha 1 \
 	--config.Oh 33/100 \
 	--pre 310
 
+
+PROBLEM="refinement/7D_FBHWC0"
+LOV_SYSTEM="systems/lovelock_7d"
+
+wolframscript -script "$GAUSSNEWTON/gauss-newton.wl" \
+	--seed "neural_field/$LOV_SYSTEM/out/run_results/run_4/stage1/logs/version_0/checkpoints/best.json" \
+	--output "neural_field/$LOV_SYSTEM/out/run_results/run_4/stage1/logs/version_0/pseudo-spectral" \
+	--problem "$PROBLEM" \
+	--config.alpha 1 \
+	--config.Oh 33/100 \
+	--pre 310
