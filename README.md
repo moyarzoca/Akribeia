@@ -47,7 +47,7 @@ Then clone the repositories:
 mkdir akribeia-workspace
 cd akribeia-workspace
 
-git clone --branch v2.0.0 https://github.com/moyarzoca/difflearning.git difflearning
+git clone --branch v2.1.0 https://github.com/moyarzoca/difflearning.git difflearning
 git clone --branch v1.0.0 https://github.com/moyarzoca/deterministic-gauss-newton-wl.git gauss-newton-refiner
 git clone https://github.com/moyarzoca/Akribeia.git akribeia
 ```
