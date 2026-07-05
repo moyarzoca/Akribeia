@@ -1,0 +1,34 @@
+{
+	"networks": 
+		{
+		"F": {
+			"layers": [2, 20, 20, 20, 1],
+			"outputs": {"F":0},
+			"type": "FCNN",
+			"activation": "silu",
+			"initializer": "pinn_stable"
+			},
+		"B": {
+			"layers": [2, 20, 20, 20, 1],
+			"outputs": {"B":0},
+			"type": "FCNN",
+			"activation": "silu",
+			"initializer": "pinn_stable"
+			},
+		"H": {
+			"layers": [2, 20, 20, 20, 1],
+			"outputs": {"H":0},
+			"type": "FCNN",
+			"activation": "silu",
+			"initializer": "pinn_stable"
+			},
+		"W": {
+			"layers": [2, 20, 20, 20, 1],
+			"outputs": {"W":0},
+			"type": "FCNN",
+			"activation": "silu",
+			"initializer": "pinn_stable"
+			}
+
+		}
+}

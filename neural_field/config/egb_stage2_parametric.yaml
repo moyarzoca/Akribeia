@@ -1,0 +1,58 @@
+model:
+  experiment_root: &exp_root tests/EGB_Anxo
+  build_spec_path: networks/build_spec.json
+  tool: solve
+  equations_path: equations.py
+  boundary_path: boundary.py
+  exact_path: exact_solutions.py
+  weight_eqs: false
+  from_checkpoint: out/felipe/path_solve_10_alph/alph_3.0/out/logs/lightning_logs/version_0/checkpoints/epoch=0-step=30000.ckpt
+  conf:
+    rh: 1.0
+  optimizer:
+    class_path: torch.optim.LBFGS
+    init_args:
+      lr: 1.0
+      max_iter: 15
+      history_size: 100
+      line_search_fn: strong_wolfe
+      tolerance_grad: 1.0e-8
+      tolerance_change: 1.0e-10
+  lr_scheduler: null
+  lr_scheduler_config: null
+
+data:
+  experiment_root: *exp_root
+  domain_path: problem/domain.json
+  space:
+    x:
+      interval: [0.0,1.57079632679489]
+      distribution:
+        type: chebyshev #dense-ends
+    alph:
+      interval: [0.0, 3.0]
+      distribution:
+        type: uniform #dense-ends
+  N: 4000
+  seed: 42
+
+trainer:
+  max_epochs: 300
+  accelerator: auto
+  precision: 64
+  gradient_clip_val: 1.0
+  gradient_clip_algorithm: norm
+  callbacks: null 
+  logger:
+    class_path: lightning.pytorch.loggers.CSVLogger
+    init_args:
+      save_dir: *exp_root
+      # Final log_dir: tests/EGB/out/tests/sol01/logs/lightning_logs/version_X
+      name: logs
+      # init_args:
+      # lr: 1.0
+      # max_iter: 15
+      # history_size: 50
+      # line_search_fn: strong_wolfe
+      # tolerance_grad: 1.0e-9
+      # tolerance_change: 1.0e-11

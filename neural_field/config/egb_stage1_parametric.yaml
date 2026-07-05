@@ -1,0 +1,42 @@
+model:
+  experiment_root: &exp_root tests/EGB_Anxo
+  build_spec_path: networks/build_spec.json
+  tool: solve
+  equations_path: equations.py
+  boundary_path: boundary.py
+  exact_path: exact_solutions.py
+  weight_eqs: false
+  conf:
+    rh: 1.0
+  optimizer:
+    class_path: torch.optim.Adam
+    init_args:
+      lr: 1.0e-3
+  lr_scheduler: null
+  lr_scheduler_config: null
+data:
+  experiment_root: *exp_root
+  domain_path: problem/domain.json
+  space:
+    x:
+      interval: [0.0,1.57079632679489]
+      distribution:
+        type: chebyshev #dense-ends
+    alph:
+      interval: [0.0, 3.0]
+      distribution:
+        type: uniform #dense-ends
+  N: 4000
+  seed: 42
+
+trainer:
+  max_epochs: 20
+  accelerator: auto
+  precision: 32
+  logger:
+    class_path: lightning.pytorch.loggers.CSVLogger
+    init_args:
+      save_dir: *exp_root
+      # Final log_dir: tests/EGB/out/tests/sol01/logs/lightning_logs/version_X
+      name: logs
+  

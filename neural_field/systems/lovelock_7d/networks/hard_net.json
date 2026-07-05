@@ -1,0 +1,46 @@
+{
+	"networks": 
+		{
+		"F": {
+			"layers": [2, 64, 64, 64, 64, 1],
+			"outputs": {"F":0},
+			"type": "FCNN",
+			"activation": "silu",
+			"initializer": "xavier"
+			},
+		"B": {
+			"layers": [2, 64, 64, 64, 64, 1],
+			"outputs": {"B":0},
+			"type": "FCNN",
+			"activation": "silu",
+			"initializer": "xavier"
+			},
+		"H": {
+			"layers": [2, 64, 64, 64, 64, 1],
+			"outputs": {"H":0},
+			"type": "FCNN",
+			"activation": "silu",
+			"initializer": "xavier"
+			},
+		"W": {
+			"layers": [2, 64, 64, 64, 64, 1],
+			"outputs": {"W":0},
+			"type": "FCNN",
+			"activation": "silu",
+			"initializer": "xavier",
+			"condition": {
+        		"type": "Dirichlet1D",
+        		"x0": 0.0,
+        		"boundary_value": 0.33}
+			
+			},
+		"C0": {
+			"layers": [1, 20, 20, 1],
+			"outputs": {"C0":0},
+			"type": "FCNN",
+			"activation": "silu",
+			"initializer": "xavier"
+			}
+
+		}
+}
