@@ -35,8 +35,7 @@ WARMUP_STEPS=2000
 STABLE_STEPS=50000
 COSINE_STEPS=3000
 MAX_STEPS_STAGE1=120000
-
-N=6000
+N1=6000
 
 # Stage 2 config
 CONFIG2="$REPLICATION_ROOT/config/egb_stage2_parametric.yaml"
@@ -70,7 +69,7 @@ EXPROOT="$SYSTEM_ROOT"
 RUN_ROOT=""
 
 while true; do
-  RUN_ROOT="$OUTPUT_ROOT/Alph_0.5_Run_${RUNID}_parametric"
+  RUN_ROOT="$OUTPUT_ROOT/run_${RUNID}"
   if [ ! -d "$RUN_ROOT" ]; then
     break
   fi
@@ -84,7 +83,7 @@ echo "========================================="
 echo "Running Parametric Training (bet) - 2 Stages"
 echo "========================================="
 
-OUTDIR="$RUN_ROOT/bet"
+OUTDIR="$RUN_ROOT"
 mkdir -p "$OUTDIR"
 
 REL_ROOT="${OUTDIR#"$SYSTEM_ROOT"}"
@@ -92,6 +91,9 @@ REL_ROOT="${REL_ROOT#/}"
 echo "Relative root: $REL_ROOT"
 
 # ================= STAGE 1 =================
+
+STAGE1_DIR="$OUTDIR/stage1"
+
 run_python "$TRAIN_PY" fit \
   --config "$CONFIG" \
   --model.experiment_root "$EXPROOT" \
@@ -117,28 +119,45 @@ run_python "$TRAIN_PY" fit \
   --trainer.max_epochs -1 \
   --trainer.log_every_n_steps 50 \
   --trainer.val_check_interval 50 \
-  --trainer.default_root_dir "$OUTDIR/stage1" \
-  --trainer.logger.init_args.save_dir "$OUTDIR/stage1" \
-  --data.N "$N"
+  --trainer.default_root_dir "$STAGE1_DIR" \
+  --trainer.logger.init_args.save_dir "$STAGE1_DIR" \
+  --trainer.logger.init_args.version 0 \
+  --trainer.logger.init_args.name logs \
+  --trainer.callbacks='[
+   {"class_path": "utils.callbacks.SaveInitialCheckpoint",
+   "init_args": {"filename": "seed.ckpt"}},
+   {"class_path": "lightning.pytorch.callbacks.ModelCheckpoint", "init_args": {"dirpath": "'"$STAGE1_DIR/logs/version_0/checkpoints"'", "monitor": "train_loss", "mode": "min", "save_top_k": 1, "filename": "best"}}]' \
+  --data.N "$N1"
 
 sleep 3
 
+run_python "$PY_ROOT/export_checkpoint.py" \
+  --input "$STAGE1_DIR/seed/seed.ckpt" \
+  --output "$STAGE1_DIR/seed/seed.json"
+
+run_python "$PY_ROOT/export_checkpoint.py" \
+  --input "$STAGE1_DIR/logs/version_0/checkpoints/best.ckpt" \
+  --output "$STAGE1_DIR/logs/version_0/checkpoints/best.json"
+
 # Plotting Stage 1
-mkdir -p "$OUTDIR/stage1/plots"
+mkdir -p "$STAGE1_DIR/plots"
 if ! run_python "$PLOT_METRICS_PY" \
-  --version_dir "$OUTDIR/stage1/logs/version_0" \
+  --version_dir "$STAGE1_DIR/logs/version_0" \
   --residual_mode raw \
-  --output "$OUTDIR/stage1/plots/metrics.png"; then
+  --output "$STAGE1_DIR/plots/metrics.png"; then
   echo "[WARN] No se pudo generar metrics.png para Stage 1"
 fi
 
 # ================= STAGE 2 =================
+
+STAGE2_DIR="$OUTDIR/stage2"
+
 run_python "$TRAIN_PY" fit \
   --config "$CONFIG2" \
   --model.experiment_root "$EXPROOT" \
   --model.boundary_path boundary.py \
   --model.build_spec_path "$RUN_JSON" \
-  --model.from_checkpoint "$REL_ROOT/stage1/logs/version_0/checkpoints/epoch=0-step=${MAX_STEPS_STAGE1}.ckpt" \
+  --model.from_checkpoint "$REL_ROOT/stage1/logs/version_0/checkpoints/best.ckpt" \
   --data.experiment_root "$EXPROOT" \
   --model.conf "$CONF_JSON" \
   --model.optimizer.init_args.lr "$OPT_LR" \
@@ -152,27 +171,34 @@ run_python "$TRAIN_PY" fit \
   --trainer.max_epochs -1 \
   --trainer.log_every_n_steps 50 \
   --trainer.val_check_interval 50 \
-  --trainer.default_root_dir "$OUTDIR/stage2" \
-  --trainer.logger.init_args.save_dir "$OUTDIR/stage2" \
+  --trainer.default_root_dir "$STAGE2_DIR" \
+  --trainer.logger.init_args.save_dir "$STAGE2_DIR" \
+  --trainer.logger.init_args.version 0 \
+  --trainer.logger.init_args.name logs \
+  --trainer.callbacks='[{"class_path": "lightning.pytorch.callbacks.ModelCheckpoint", "init_args": {"dirpath": "'"$STAGE2_DIR/logs/version_0/checkpoints"'", "monitor": "train_loss", "mode": "min", "save_top_k": 1, "filename": "best"}}]' \
   --data.N "$N2"
 
 sleep 3
 
+run_python "$PY_ROOT/export_checkpoint.py" \
+  --input "$STAGE2_DIR/logs/version_0/checkpoints/best.ckpt" \
+  --output "$STAGE2_DIR/logs/version_0/checkpoints/best.json"
+
 # ================= EXPORTACIONES STAGE 2 =================
-mkdir -p "$OUTDIR/stage2/plots"
+mkdir -p "$STAGE2_DIR/plots"
 
 # 1. Plot Metrics
 if ! run_python "$PLOT_METRICS_PY" \
-  --version_dir "$OUTDIR/stage2/logs/version_0" \
+  --version_dir "$STAGE2_DIR/logs/version_0" \
   --residual_mode raw \
-  --output "$OUTDIR/stage2/plots/metrics.png"; then
+  --output "$STAGE2_DIR/plots/metrics.png"; then
   echo "[WARN] No se pudo generar metrics.png para Stage 2"
 fi
 
 # 2. Plot Funciones (F, B, W, H)
 if ! run_python "$PLOT_FUNCS_PY" \
-  --version_dir "$OUTDIR/stage2/logs/version_0" \
-  --output_dir "$OUTDIR/plots" \
+  --version_dir "$STAGE2_DIR/logs/version_0" \
+  --output_dir "$STAGE2_DIR/plots" \
   --r_min 0.0 \
   --r_max 20.0 \
   --bet_min 0.0 \
@@ -181,26 +207,4 @@ if ! run_python "$PLOT_FUNCS_PY" \
   echo "[WARN] No se pudo generar el plot de funciones"
 fi
 
-# 3. Exportar el CSV con datos
-if ! run_python "$CSV_PY" \
-  --version_dir "$OUTDIR/stage2/logs/version_0" \
-  --output_dir "$OUTDIR/stage2/plots"; then
-  echo "[WARN] No se pudo generar el CSV de datos"
-fi
-
-# =====================================================================
-# BARRIDO FINAL: RECOPILAR Y GRAFICAR TERMODINÁMICA
-# =====================================================================
-echo "========================================================="
-echo "Entrenamiento finalizado. Procesando resumen..."
-echo "========================================================="
-
-if run_python "$THERMO_ALL_PY" --base_dir "$RUN_ROOT"; then
-  echo "Termodinámica global extraída correctamente."
-  echo "Generando gráfica de razones termodinámicas..."
-  run_python "$THERMO_PLOT_PY" --csv_path "$RUN_ROOT/thermodynamics_summary.csv"
-else
-  echo "[ERROR] Falló la extracción global de termodinámica."
-fi
-
-echo "¡Pipeline 100% completado! Revisa la carpeta $RUN_ROOT"
+echo "Done. Check the folder $RUN_ROOT"

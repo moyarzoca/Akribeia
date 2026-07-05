@@ -112,10 +112,24 @@ run_python "$TRAIN_PY" fit \
   --trainer.val_check_interval 50 \
   --trainer.default_root_dir "$STAGE1_DIR" \
   --trainer.logger.init_args.save_dir "$STAGE1_DIR" \
-  --trainer.callbacks='[{"class_path": "lightning.pytorch.callbacks.ModelCheckpoint", "init_args": {"dirpath": "'"$STAGE1_DIR/checkpoints"'", "monitor": "train_loss", "mode": "min", "save_top_k": 1, "filename": "best"}}]' \
+  --trainer.logger.init_args.version 0 \
+  --trainer.logger.init_args.name logs \
+  --trainer.callbacks='[
+   {"class_path": "utils.callbacks.SaveInitialCheckpoint",
+   "init_args": {"filename": "seed.ckpt"}},
+   {"class_path": "lightning.pytorch.callbacks.ModelCheckpoint", "init_args": {"dirpath": "'"$STAGE1_DIR/logs/version_0/checkpoints"'", "monitor": "train_loss", "mode": "min", "save_top_k": 1, "filename": "best"}}]' \
   --data.N "$N1"
 
 sleep 3
+
+# If the seed is saved through the callback, this line exports it to json
+run_python "$PY_ROOT/export_checkpoint.py" \
+  --input "$STAGE1_DIR/seed/seed.ckpt" \
+  --output "$STAGE1_DIR/seed/seed.json"
+
+run_python "$PY_ROOT/export_checkpoint.py" \
+  --input "$STAGE1_DIR/logs/version_0/checkpoints/best.ckpt" \
+  --output "$STAGE1_DIR/logs/version_0/checkpoints/best.json"
 
 # Plotting Stage 1
 mkdir -p "$OUTDIR/stage1/plots"
@@ -135,7 +149,7 @@ run_python "$TRAIN_PY" fit \
   --model.experiment_root "$EXPROOT" \
   --model.boundary_path boundary.py \
   --model.build_spec_path "$RUN_JSON" \
-  --model.from_checkpoint "$REL_ROOT/stage1/checkpoints/best.ckpt" \
+  --model.from_checkpoint "$REL_ROOT/stage1/logs/version_0/checkpoints/best.ckpt" \
   --data.experiment_root "$EXPROOT" \
   --model.conf "$CONF_JSON" \
   --model.optimizer.init_args.lr "$OPT_LR" \
@@ -151,10 +165,16 @@ run_python "$TRAIN_PY" fit \
   --trainer.val_check_interval 50 \
   --trainer.default_root_dir "$STAGE2_DIR" \
   --trainer.logger.init_args.save_dir "$STAGE2_DIR" \
-  --trainer.callbacks='[{"class_path": "lightning.pytorch.callbacks.ModelCheckpoint", "init_args": {"dirpath": "'"$STAGE2_DIR/checkpoints"'", "monitor": "train_loss", "mode": "min", "save_top_k": 1, "filename": "best"}}]' \
+  --trainer.logger.init_args.version 0 \
+  --trainer.logger.init_args.name logs \
+  --trainer.callbacks='[{"class_path": "lightning.pytorch.callbacks.ModelCheckpoint", "init_args": {"dirpath": "'"$STAGE2_DIR/logs/version_0/checkpoints"'", "monitor": "train_loss", "mode": "min", "save_top_k": 1, "filename": "best"}}]' \
   --data.N "$N2"
 
 sleep 3
+
+run_python "$PY_ROOT/export_checkpoint.py" \
+  --input "$STAGE2_DIR/logs/version_0/checkpoints/best.ckpt" \
+  --output "$STAGE2_DIR/logs/version_0/checkpoints/best.json"
 
 # ================= EXPORT STAGE 2 =================
 mkdir -p "$OUTDIR/stage2/plots"
@@ -167,7 +187,7 @@ if ! run_python "$PLOT_METRICS_PY" \
   echo "[WARN] The metrics plot script failed."
 fi
 
-# 2. Plot Funciones (F, B, W, H) - Si tienes tu script adaptado
+# 2. Plot Funciones (F, B, W, H)
 if ! run_python "$PLOT_FUNCS_PY" \
   --version_dir "$OUTDIR/stage2/logs/version_0" \
   --output_dir "$OUTDIR/stage2/plots" \
