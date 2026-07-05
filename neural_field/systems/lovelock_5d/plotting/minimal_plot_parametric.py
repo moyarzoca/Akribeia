@@ -404,11 +404,7 @@ def main():
             if key.startswith("trainable_params."):
                 trainable_params[key.split(".", 1)[1]] = float(value.detach().cpu().item())
 
-    exp_root_raw = hp.get("experiment_root", REPO_ROOT)
-    if isinstance(exp_root_raw, str) and exp_root_raw.startswith("../systems"):
-        exp_root = (REPO_ROOT / "replication/configs" / exp_root_raw).resolve()
-    else:
-        exp_root = Path(exp_root_raw)
+    exp_root = args.version_dir.parents[5].resolve()
 
     module = PINNModule(
         build_spec_path=str(hp["build_spec_path"]),

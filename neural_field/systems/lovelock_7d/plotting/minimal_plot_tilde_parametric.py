@@ -42,7 +42,7 @@ mpl.rcParams.update({
 import sys
 # Resolve the repository root dynamically (4 levels up from this script)
 # plotting <- Lovelock7D_parametric <- systems <- replication <- difflearning
-REPO_ROOT = Path(__file__).resolve().parents[4]
+REPO_ROOT = Path(__file__).resolve().parents[5] / "difflearning"
 
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -332,11 +332,7 @@ def main():
             if key.startswith("trainable_params."):
                 trainable_params[key.split(".", 1)[1]] = float(value.detach().cpu().item())
 
-    exp_root_raw = config_data.get("experiment_root", REPO_ROOT)
-    if isinstance(exp_root_raw, str) and exp_root_raw.startswith("../systems"):
-        exp_root = (REPO_ROOT / "replication/configs" / exp_root_raw).resolve()
-    else:
-        exp_root = Path(exp_root_raw)
+    exp_root = args.version_dir.parents[5].resolve()
 
     module = PINNModule(
         build_spec_path=str(hp["build_spec_path"]),
@@ -376,7 +372,7 @@ def main():
         model_by_bet[float(bet_val)] = {key: to_np(value) for key, value in model_eval.items()}
 
     plot_parametric_family(
-        out_dir / "comparison_parametric_transformed.pdf",
+        out_dir / "comparison_parametric_transformed.png",
         x_np, bet_values, model_by_bet, exact_data,
         value_keys=["F", "B", "H", "W"],
         param_name_latex=r"$\beta$",
