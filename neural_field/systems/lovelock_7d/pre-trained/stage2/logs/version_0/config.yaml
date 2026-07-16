@@ -1,0 +1,116 @@
+# lightning.pytorch==2.6.5
+seed_everything: 42
+trainer:
+  accelerator: auto
+  strategy: auto
+  devices: auto
+  num_nodes: 1
+  precision: 64
+  logger:
+    class_path: lightning.pytorch.loggers.CSVLogger
+    init_args:
+      save_dir: ../systems/lovelock_7d/out/run_results/run_4/stage2
+      name: logs
+      version: 0
+      prefix: ''
+      flush_logs_every_n_steps: 100
+  callbacks:
+  - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      dirpath: ../systems/lovelock_7d/out/run_results/run_4/stage2/logs/version_0/checkpoints
+      filename: best
+      monitor: train_loss
+      verbose: false
+      save_last: null
+      save_top_k: 1
+      save_on_exception: false
+      save_weights_only: false
+      mode: min
+      auto_insert_metric_name: true
+      every_n_train_steps: null
+      train_time_interval: null
+      every_n_epochs: null
+      save_on_train_epoch_end: null
+      enable_version_counter: true
+  fast_dev_run: false
+  max_epochs: -1
+  min_epochs: null
+  max_steps: 15000
+  min_steps: null
+  max_time: null
+  limit_train_batches: null
+  limit_val_batches: null
+  limit_test_batches: null
+  limit_predict_batches: null
+  overfit_batches: 0.0
+  val_check_interval: 50
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: null
+  log_every_n_steps: 50
+  enable_checkpointing: null
+  enable_progress_bar: null
+  enable_model_summary: null
+  accumulate_grad_batches: 1
+  gradient_clip_val: 1.0
+  gradient_clip_algorithm: norm
+  deterministic: null
+  benchmark: null
+  inference_mode: true
+  use_distributed_sampler: true
+  profiler: null
+  detect_anomaly: false
+  barebones: false
+  plugins: null
+  sync_batchnorm: false
+  reload_dataloaders_every_n_epochs: 0
+  default_root_dir: ../systems/lovelock_7d/out/run_results/run_4/stage2
+  enable_autolog_hparams: true
+  model_registry: null
+model:
+  build_spec_path: networks/hard_net.json
+  experiment_root: ../systems/lovelock_7d
+  model_dir: ''
+  tool: solve
+  equations_path: equations.py
+  boundary_path: boundary.py
+  exact_path: exact_solutions.py
+  weight_eqs: false
+  init_conf_path: ''
+  conf:
+    rh: 1.0
+    alph: 0.5
+  optimizer:
+    class_path: torch.optim.LBFGS
+    init_args:
+      lr: 1.0
+      max_iter: 10
+      max_eval: null
+      tolerance_grad: 1.0e-08
+      tolerance_change: 1.0e-10
+      history_size: 50
+      line_search_fn: strong_wolfe
+  lr_scheduler: null
+  lr_scheduler_config: null
+  from_checkpoint: out/run_results/run_4/stage1/logs/version_0/checkpoints/best.ckpt
+  trainable_params: null
+  freeze_collocation: false
+data:
+  experiment_root: ../systems/lovelock_7d
+  domain_path: problem/domain.json
+  N: 12000
+  space:
+    x:
+      interval:
+      - 0.0
+      - 1.570708
+      distribution:
+        type: chebyshev
+    bet:
+      interval:
+      - 0.0
+      - 0.5
+      distribution:
+        type: uniform
+  seed: 42
+ckpt_path: null
+weights_only: null

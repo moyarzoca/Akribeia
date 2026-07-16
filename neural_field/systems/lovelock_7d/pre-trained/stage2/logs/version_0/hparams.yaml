@@ -1,0 +1,44 @@
+N: 12000
+_instantiator: lightning.pytorch.cli.instantiate_module
+boundary_path: boundary.py
+build_spec_path: networks/hard_net.json
+conf:
+  alph: 0.5
+  rh: 1.0
+domain_path: problem/domain.json
+equations_path: equations.py
+exact_path: exact_solutions.py
+experiment_root: ../systems/lovelock_7d
+freeze_collocation: false
+from_checkpoint: out/run_results/run_4/stage1/logs/version_0/checkpoints/best.ckpt
+init_conf_path: ''
+lr_scheduler: null
+lr_scheduler_config: null
+model_dir: ''
+optimizer:
+  class_path: torch.optim.LBFGS
+  init_args:
+    history_size: 50
+    line_search_fn: strong_wolfe
+    lr: 1.0
+    max_eval: null
+    max_iter: 10
+    tolerance_change: 1.0e-10
+    tolerance_grad: 1.0e-08
+seed: 42
+space:
+  bet:
+    distribution:
+      type: uniform
+    interval:
+    - 0.0
+    - 0.5
+  x:
+    distribution:
+      type: chebyshev
+    interval:
+    - 0.0
+    - 1.570708
+tool: solve
+trainable_params: null
+weight_eqs: false
