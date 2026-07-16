@@ -1,1 +1,2 @@
 neural_field/systems/*/out/
+neural_field/systems/*/pre-trained/stage*/logs/version_0/pseudo-spectral
