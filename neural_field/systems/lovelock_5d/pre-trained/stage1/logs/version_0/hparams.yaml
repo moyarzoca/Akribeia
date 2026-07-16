@@ -1,0 +1,68 @@
+N: 6000
+_instantiator: lightning.pytorch.cli.instantiate_module
+boundary_path: boundary.py
+build_spec_path: networks/hard_net.json
+conf:
+  rh: 1.0
+domain_path: problem/domain.json
+equations_path: equations.py
+exact_path: exact_solutions.py
+experiment_root: ../systems/lovelock_5d
+freeze_collocation: false
+from_checkpoint: ''
+init_conf_path: ''
+lr_scheduler:
+  class_path: utils.schedulers.WarmupStablePlateauCosineLR
+  init_args:
+    cooldown: 250
+    cosine_steps: 3000
+    eps: 1.0e-08
+    factor: 0.5
+    last_epoch: -1
+    min_lr: 1.0e-07
+    mode: min
+    patience: 1000
+    plateau_reductions_before_cosine: 3
+    stable_steps: 30000
+    threshold: 0.001
+    threshold_mode: rel
+    warmup_start_lr: 0.0
+    warmup_steps: 2000
+lr_scheduler_config:
+  frequency: 1
+  interval: step
+  monitor: train_loss
+model_dir: ''
+optimizer:
+  class_path: torch.optim.Adam
+  init_args:
+    amsgrad: false
+    betas:
+    - 0.9
+    - 0.999
+    capturable: false
+    decoupled_weight_decay: false
+    differentiable: false
+    eps: 1.0e-08
+    foreach: null
+    fused: null
+    lr: 0.001
+    maximize: false
+    weight_decay: 0.0
+seed: 42
+space:
+  alph:
+    distribution:
+      type: uniform
+    interval:
+    - 0.0
+    - 3.0
+  x:
+    distribution:
+      type: chebyshev
+    interval:
+    - 0.0
+    - 1.570708
+tool: solve
+trainable_params: null
+weight_eqs: false

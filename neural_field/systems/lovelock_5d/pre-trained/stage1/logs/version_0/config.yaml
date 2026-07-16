@@ -1,0 +1,143 @@
+# lightning.pytorch==2.6.5
+seed_everything: 42
+trainer:
+  accelerator: auto
+  strategy: auto
+  devices: auto
+  num_nodes: 1
+  precision: 32
+  logger:
+    class_path: lightning.pytorch.loggers.CSVLogger
+    init_args:
+      save_dir: ../systems/lovelock_5d/out/run_results/run_1/stage1
+      name: logs
+      version: 0
+      prefix: ''
+      flush_logs_every_n_steps: 100
+  callbacks:
+  - class_path: utils.callbacks.SaveInitialCheckpoint
+    init_args:
+      filename: seed.ckpt
+  - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      dirpath: ../systems/lovelock_5d/out/run_results/run_1/stage1/logs/version_0/checkpoints
+      filename: best
+      monitor: train_loss
+      verbose: false
+      save_last: null
+      save_top_k: 1
+      save_on_exception: false
+      save_weights_only: false
+      mode: min
+      auto_insert_metric_name: true
+      every_n_train_steps: null
+      train_time_interval: null
+      every_n_epochs: null
+      save_on_train_epoch_end: null
+      enable_version_counter: true
+  fast_dev_run: false
+  max_epochs: -1
+  min_epochs: null
+  max_steps: 60000
+  min_steps: null
+  max_time: null
+  limit_train_batches: null
+  limit_val_batches: null
+  limit_test_batches: null
+  limit_predict_batches: null
+  overfit_batches: 0.0
+  val_check_interval: 50
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: null
+  log_every_n_steps: 50
+  enable_checkpointing: null
+  enable_progress_bar: null
+  enable_model_summary: null
+  accumulate_grad_batches: 1
+  gradient_clip_val: null
+  gradient_clip_algorithm: null
+  deterministic: null
+  benchmark: null
+  inference_mode: true
+  use_distributed_sampler: true
+  profiler: null
+  detect_anomaly: false
+  barebones: false
+  plugins: null
+  sync_batchnorm: false
+  reload_dataloaders_every_n_epochs: 0
+  default_root_dir: ../systems/lovelock_5d/out/run_results/run_1/stage1
+  enable_autolog_hparams: true
+  model_registry: null
+model:
+  build_spec_path: networks/hard_net.json
+  experiment_root: ../systems/lovelock_5d
+  model_dir: ''
+  tool: solve
+  equations_path: equations.py
+  boundary_path: boundary.py
+  exact_path: exact_solutions.py
+  weight_eqs: false
+  init_conf_path: ''
+  conf:
+    rh: 1.0
+  optimizer:
+    class_path: torch.optim.Adam
+    init_args:
+      lr: 0.001
+      betas:
+      - 0.9
+      - 0.999
+      eps: 1.0e-08
+      weight_decay: 0.0
+      amsgrad: false
+      foreach: null
+      maximize: false
+      capturable: false
+      differentiable: false
+      fused: null
+      decoupled_weight_decay: false
+  lr_scheduler:
+    class_path: utils.schedulers.WarmupStablePlateauCosineLR
+    init_args:
+      warmup_steps: 2000
+      stable_steps: 30000
+      cosine_steps: 3000
+      plateau_reductions_before_cosine: 3
+      warmup_start_lr: 0.0
+      min_lr: 1.0e-07
+      last_epoch: -1
+      mode: min
+      factor: 0.5
+      patience: 1000
+      threshold: 0.001
+      threshold_mode: rel
+      cooldown: 250
+      eps: 1.0e-08
+  lr_scheduler_config:
+    monitor: train_loss
+    interval: step
+    frequency: 1
+  from_checkpoint: ''
+  trainable_params: null
+  freeze_collocation: false
+data:
+  experiment_root: ../systems/lovelock_5d
+  domain_path: problem/domain.json
+  N: 6000
+  space:
+    x:
+      interval:
+      - 0.0
+      - 1.570708
+      distribution:
+        type: chebyshev
+    alph:
+      interval:
+      - 0.0
+      - 3.0
+      distribution:
+        type: uniform
+  seed: 42
+ckpt_path: null
+weights_only: null
